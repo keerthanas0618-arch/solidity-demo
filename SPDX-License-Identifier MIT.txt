@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract OrderTracker {
+    // ============================================================
+    // 1. DEFINE THE ENUM
+    // ============================================================
+    enum OrderStatus {
+        Pending,            // 0
+        Shipped,            // 1
+        IntransitPointA,    // 2
+        IntransitPointB,    // 3
+        Delivered,          // 4
+        Cancelled           // 5
+    }
+
+    // ============================================================
+    // 2. USE THE ENUM
+    // ============================================================
+    OrderStatus public currentOrderStatus;  // Default: Pending (0)
+
+    // ============================================================
+    // 3. FUNCTIONS TO SET AND GET STATUS
+    // ============================================================
+
+    function setStatus(OrderStatus _status) public {
+        currentOrderStatus = _status;
+    }
+
+    function getStatusString() public view returns (string memory) {
+        if (currentOrderStatus == OrderStatus.Pending) {
+            return "Pending";
+        } else if (currentOrderStatus == OrderStatus.Shipped) {
+            return "Shipped";
+        } else if (currentOrderStatus == OrderStatus.IntransitPointA) {
+            return "IntransitPointA";
+        } else if (currentOrderStatus == OrderStatus.IntransitPointB) {
+            return "IntransitPointB";
+        } else if (currentOrderStatus == OrderStatus.Delivered) {
+            return "Delivered";
+        } else if (currentOrderStatus == OrderStatus.Cancelled) {
+            return "Cancelled";
+        }
+        return "Unknown";
+    }
+
+    function getStatusNumber() public view returns (uint) {
+        return uint(currentOrderStatus);
+    }
+
+    // ============================================================
+    // 4. PRACTICAL USE: Order System
+    // ============================================================
+
+    struct Order {
+        uint id;
+        string item;
+        uint price;
+        OrderStatus status;
+    }
+
+    Order[] public orders;
+    uint public orderCount;
+
+    function createOrder(string memory _item, uint _price) public {
+        orderCount++;
+        orders.push(Order({
+            id: orderCount,
+            item: _item,
+            price: _price,
+            status: OrderStatus.Pending
+        }));
+    }
+
+    function updateOrderStatus(uint _orderId, OrderStatus _newStatus) public {
+        require(_orderId > 0 && _orderId <= orders.length, "Order not found");
+        orders[_orderId - 1].status = _newStatus;
+    }
+
+    function getOrder(uint _orderId) public view returns (
+        uint id,
+        string memory item,
+        uint price,
+        OrderStatus status
+    ) {
+        require(_orderId > 0 && _orderId <= orders.length, "Order not found");
+        Order memory order = orders[_orderId - 1];
+        return (order.id, order.item, order.price, order.status);
+    }
+
+    function getOrderStatusString(uint _orderId) public view returns (string memory) {
+        require(_orderId > 0 && _orderId <= orders.length, "Order not found");
+        OrderStatus status = orders[_orderId - 1].status;
+
+        if (status == OrderStatus.Pending) return "Pending";
+        if (status == OrderStatus.Shipped) return "Shipped";
+        if (status == OrderStatus.IntransitPointA) return "IntransitPointA";
+        if (status == OrderStatus.IntransitPointB) return "IntransitPointB";
+        if (status == OrderStatus.Delivered) return "Delivered";
+        if (status == OrderStatus.Cancelled) return "Cancelled";
+        return "Unknown";
+    }
+}
